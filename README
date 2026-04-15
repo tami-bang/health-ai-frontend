@@ -1,0 +1,98 @@
+# Health AI Frontend
+
+## Overview
+health-ai-frontend는 Next.js 기반 헬스케어 AI 검색 서비스의 프론트엔드입니다.  
+증상 입력 → 검색 요청 → 결과 시각화 → triage 안내 → 다국어 UI까지 전체 UI를 담당합니다.
+
+---
+
+## Core Features
+
+### Symptom Search
+- 자연어 증상 입력 기반 검색
+
+### AI Result Visualization
+- 검색 결과 및 요약 정보 표시
+
+### Triage Guidance
+- red / yellow / green 응급도 제공
+
+### Multilingual UI
+- 한글 / 영어 지원
+
+### Authentication
+- 회원가입 / 로그인 / 토큰 인증
+
+### Admin Interface
+- 사용자 관리 및 운영 기능
+
+---
+
+## Flow
+
+User Input  
+→ API Request  
+→ Backend (health-ai-search-api)  
+→ AI Result + Triage  
+→ UI Rendering  
+
+---
+
+## Structure
+
+### app
+- (public) — 비로그인 화면
+- (user) — 사용자 화면
+- admin — 관리자 UI
+- layout.tsx — 공통 레이아웃
+
+### lib
+- api/client.ts — API 통신
+- auth-session.ts — 인증 관리
+
+### components
+- ui — 공통 UI
+- layout — 레이아웃
+
+---
+
+## Tech Stack
+- Next.js
+- TypeScript
+- Tailwind CSS
+- FastAPI
+
+---
+
+## Run
+git clone https://github.com/tami-bang/health-ai-frontend.git  
+cd health-ai-frontend  
+npm install  
+npm run dev  
+
+http://localhost:3000
+
+---
+
+## Env
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+
+---
+
+## What I Built
+- 검색 UI + API 연동
+- AI 결과 + triage 시각화
+- 인증 시스템 구현
+- 사용자 / 관리자 화면 분리
+
+---
+
+## Next
+- UI/UX 개선
+- 캐싱 및 성능 개선
+- 모바일 최적화
+
+---
+
+## Author
+https://github.com/tami-bang
