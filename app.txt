@@ -1,0 +1,40 @@
+Folder PATH listing
+Volume serial number is 6250-BAF4
+C:\USERS\PETIT\DESKTOP\HEALTH-AI-FRONTEND\APP
+|   globals.css
+|   layout.tsx
+|   
++---(public)
+|   |   layout.tsx
+|   |   page.tsx
+|   |   
+|   +---forgot-id
+|   |       page.tsx
+|   |       
+|   +---forgot-password
+|   |       page.tsx
+|   |       
+|   +---login
+|   |       page.tsx
+|   |       
+|   +---reset-password
+|   |       page.tsx
+|   |       
+|   \---signup
+|           page.tsx
+|           
+\---(user)
+    |   layout.tsx
+    |   
+    +---me
+    |       page.tsx
+    |       
+    +---search
+    |   |   page.tsx
+    |   |   
+    |   \---summary
+    |           page.tsx
+    |           
+    \---triage
+            page.tsx
+            

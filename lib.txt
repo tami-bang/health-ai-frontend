@@ -1,0 +1,34 @@
+Folder PATH listing
+Volume serial number is 6250-BAF4
+C:\USERS\PETIT\DESKTOP\HEALTH-AI-FRONTEND\LIB
+|   utils.ts
+|   
++---api
+|       admin-api.ts
+|       auth-api.ts
+|       client.ts
+|       search-api.ts
+|       triage-api.ts
+|       
++---auth
+|       auth-session.ts
+|       role-guard.ts
+|       token-storage.ts
+|       
++---constants
+|       navigation.ts
+|       roles.ts
+|       routes.ts
+|       theme.ts
+|       
++---utils
+|       date.ts
+|       response.ts
+|       text.ts
+|       triage.ts
+|       
+\---validators
+        admin-validator.ts
+        auth-validator.ts
+        search-validator.ts
+        
