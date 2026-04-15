@@ -1,43 +1,29 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
-import './globals.css'
+import type { Metadata } from 'next' // 용도: 메타데이터 정의
+import { Geist, Geist_Mono } from 'next/font/google' // 용도: 폰트 설정
+import { Analytics } from '@vercel/analytics/next' // 용도: 분석 도구
+import AppProviders from './providers' // 용도: 전역 세션 초기화
+import './globals.css' // 용도: 글로벌 스타일
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const _geist = Geist({ subsets: ['latin'] })
+const _geistMono = Geist_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
+  title: 'HealthAI',
+  description: 'AI Health Search Service',
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        {children}
+        <AppProviders>
+          {children}
+        </AppProviders>
+
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

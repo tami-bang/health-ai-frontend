@@ -1,3 +1,5 @@
+// /types/search.ts
+
 export interface SearchRequest {
   query: string
   include_summary?: boolean
@@ -22,7 +24,12 @@ export interface SearchGuidance {
   question_suggestions: string[]
 }
 
-export type TriageLevel = 'emergency' | 'urgent' | 'moderate' | 'low' | 'self_care'
+export type TriageLevel =
+  | 'emergency'
+  | 'urgent'
+  | 'moderate'
+  | 'low'
+  | 'self_care'
 
 export interface SearchResult {
   id: string
@@ -35,8 +42,8 @@ export interface SearchResult {
 }
 
 export interface TopResult extends SearchResult {
-  detailed_content: string
-  key_points: string[]
+  detailed_content?: string
+  key_points?: string[]
   related_conditions?: string[]
 }
 
@@ -48,16 +55,18 @@ export interface RelatedTopic {
 
 export interface AISummary {
   summary: string
-  key_findings: string[]
-  recommendations: string[]
-  disclaimer: string
+  key_findings?: string[]
+  recommendations?: string[]
+  disclaimer?: string
 }
 
 export interface ResultsBundle {
   top_result: TopResult | null
   results: SearchResult[]
   related_topics: RelatedTopic[]
-  ai_summary: AISummary | null
+
+  // optional 처리
+  ai_summary?: AISummary | null
 }
 
 export interface SearchResponse {
