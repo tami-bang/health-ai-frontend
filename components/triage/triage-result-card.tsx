@@ -1,13 +1,13 @@
-import Link from 'next/link'
-import { AlertTriangle, AlertCircle, Clock, CheckCircle, Heart, Search, RefreshCcw, ArrowRight } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { TriageLevelBadge } from './triage-level-badge'
-import { cn } from '@/lib/utils'
-import { TRIAGE_COLORS } from '@/lib/constants/theme'
-import { ROUTES } from '@/lib/constants/routes'
-import type { TriageResponse } from '@/types/triage'
-import type { TriageLevel } from '@/types/search'
+import Link from 'next/link' // 용도: 페이지 이동 링크 렌더링
+import { AlertTriangle, AlertCircle, Clock, CheckCircle, Heart, Search, RefreshCcw, ArrowRight } from 'lucide-react' // 용도: triage 결과 상태별 아이콘 렌더링
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card' // 용도: 카드 UI 구성
+import { Button } from '@/components/ui/button' // 용도: 액션 버튼 UI
+import { TriageLevelBadge } from './triage-level-badge' // 용도: triage 레벨 배지 렌더링
+import { cn } from '@/lib/utils' // 용도: className 병합
+import { ROUTES } from '@/lib/constants/routes' // 용도: 검색 페이지 경로 참조
+import { getTriageConfig, getTriageDisplayLevel, isEmergency } from '@/lib/utils/triage' // 용도: triage level 정규화 및 안전 스타일 조회
+import type { TriageResponse } from '@/types/triage' // 용도: triage 응답 타입 사용
+import type { TriageLevel } from '@/types/search' // 용도: 정규화된 프론트 triage level 타입 사용
 
 interface TriageResultCardProps {
   result: TriageResponse
@@ -22,14 +22,24 @@ const TRIAGE_ICONS: Record<TriageLevel, typeof AlertTriangle> = {
   self_care: Heart,
 }
 
+function getResultCardConfig(triageLevel: TriageResponse['triage_level']) {
+  const displayLevel = getTriageDisplayLevel(triageLevel)
+  const config = getTriageConfig(triageLevel)
+  const Icon = TRIAGE_ICONS[displayLevel]
+
+  return {
+    displayLevel,
+    config,
+    Icon,
+    emergency: isEmergency(triageLevel),
+  }
+}
+
 export function TriageResultCard({ result, onReset }: TriageResultCardProps) {
-  const config = TRIAGE_COLORS[result.triage_level]
-  const Icon = TRIAGE_ICONS[result.triage_level]
-  const isEmergency = result.triage_level === 'emergency'
+  const { config, Icon, emergency } = getResultCardConfig(result.triage_level)
 
   return (
     <div className="space-y-6">
-      {/* Main Result */}
       <Card className={cn('border-2', config.border)}>
         <CardHeader className={cn('pb-4', config.bg)}>
           <div className="flex items-center gap-3">
@@ -44,13 +54,14 @@ export function TriageResultCard({ result, onReset }: TriageResultCardProps) {
             </div>
           </div>
         </CardHeader>
+
         <CardContent className="pt-4">
-          <p className="text-slate-700 text-base leading-relaxed">
+          <p className="text-base leading-relaxed text-slate-700">
             {result.triage_message}
           </p>
 
-          {isEmergency && (
-            <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-4">
+          {emergency && (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
               <p className="text-sm font-medium text-red-800">
                 If you are experiencing a medical emergency, please call emergency services (911) immediately.
               </p>
@@ -59,7 +70,6 @@ export function TriageResultCard({ result, onReset }: TriageResultCardProps) {
         </CardContent>
       </Card>
 
-      {/* Matched Patterns */}
       {result.matched_patterns && result.matched_patterns.length > 0 && (
         <Card className="border-slate-200">
           <CardHeader className="pb-3">
@@ -72,7 +82,7 @@ export function TriageResultCard({ result, onReset }: TriageResultCardProps) {
                   key={pattern.pattern_id}
                   className="rounded-lg bg-slate-50 p-3"
                 >
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="mb-1 flex items-center justify-between">
                     <span className="font-medium text-slate-900">
                       {pattern.pattern_name}
                     </span>
@@ -88,7 +98,6 @@ export function TriageResultCard({ result, onReset }: TriageResultCardProps) {
         </Card>
       )}
 
-      {/* Recommendations */}
       {result.recommendations && result.recommendations.length > 0 && (
         <Card className="border-slate-200">
           <CardHeader className="pb-3">
@@ -98,7 +107,7 @@ export function TriageResultCard({ result, onReset }: TriageResultCardProps) {
             <ul className="space-y-2">
               {result.recommendations.map((rec, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm text-slate-700">
-                  <ArrowRight className="h-4 w-4 shrink-0 text-teal-600 mt-0.5" />
+                  <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-teal-600" />
                   {rec}
                 </li>
               ))}
@@ -107,7 +116,6 @@ export function TriageResultCard({ result, onReset }: TriageResultCardProps) {
         </Card>
       )}
 
-      {/* Follow-up Questions */}
       {result.follow_up_questions && result.follow_up_questions.length > 0 && (
         <Card className="border-slate-200">
           <CardHeader className="pb-3">
@@ -125,19 +133,18 @@ export function TriageResultCard({ result, onReset }: TriageResultCardProps) {
         </Card>
       )}
 
-      {/* Disclaimer */}
       {result.disclaimer && (
-        <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm text-amber-800">{result.disclaimer}</p>
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
         <Button variant="outline" onClick={onReset}>
           <RefreshCcw className="mr-2 h-4 w-4" />
           New Assessment
         </Button>
+
         <Button asChild>
           <Link href={ROUTES.SEARCH}>
             <Search className="mr-2 h-4 w-4" />

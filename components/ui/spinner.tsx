@@ -1,8 +1,9 @@
-import { Loader2Icon } from 'lucide-react'
+import { Loader2Icon } from 'lucide-react' // 용도: 로딩 아이콘 렌더링
+import { cn } from '@/lib/utils' // 용도: className 병합
 
-import { cn } from '@/lib/utils'
+interface SpinnerProps extends React.ComponentProps<'svg'> {}
 
-function Spinner({ className, ...props }: React.ComponentProps<'svg'>) {
+function Spinner({ className, ...props }: SpinnerProps) {
   return (
     <Loader2Icon
       role="status"

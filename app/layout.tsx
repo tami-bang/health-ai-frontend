@@ -10,21 +10,34 @@ const _geistMono = Geist_Mono({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'HealthAI',
   description: 'AI Health Search Service',
+  other: {
+    google: 'notranslate',
+  },
+}
+
+interface RootLayoutProps {
+  children: React.ReactNode
+}
+
+function renderAnalytics() {
+  if (process.env.NODE_ENV !== 'production') {
+    return null
+  }
+
+  return <Analytics />
 }
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: RootLayoutProps) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
+    <html lang="en" translate="no" suppressHydrationWarning>
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <AppProviders>
           {children}
         </AppProviders>
 
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+        {renderAnalytics()}
       </body>
     </html>
   )

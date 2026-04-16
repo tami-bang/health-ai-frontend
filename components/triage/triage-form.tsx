@@ -1,22 +1,79 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, X, Stethoscope } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Slider } from '@/components/ui/slider'
-import { Spinner } from '@/components/ui/spinner'
-import { Badge } from '@/components/ui/badge'
-import { triageApi } from '@/lib/api/triage-api'
-import { validateTriageSymptoms } from '@/lib/validators/search-validator'
-import { extractErrorMessage } from '@/lib/utils/response'
-import type { TriageResponse } from '@/types/triage'
-import { toast } from 'sonner'
+import { useState } from 'react' // 용도: triage form 상태 관리
+import { Plus, X, Stethoscope } from 'lucide-react' // 용도: 폼 아이콘 렌더링
+import { Button } from '@/components/ui/button' // 용도: 공용 버튼 UI
+import { Input } from '@/components/ui/input' // 용도: 증상/기간 입력 UI
+import { Label } from '@/components/ui/label' // 용도: 입력 라벨 UI
+import { Textarea } from '@/components/ui/textarea' // 용도: 추가 정보 입력 UI
+import { Slider } from '@/components/ui/slider' // 용도: 증상 심각도 입력 UI
+import { Spinner } from '@/components/ui/spinner' // 용도: 제출 중 로딩 표시
+import { Badge } from '@/components/ui/badge' // 용도: 등록된 증상 태그 UI
+import { triageApi } from '@/lib/api/triage-api' // 용도: triage API 호출
+import { validateTriageSymptoms } from '@/lib/validators/search-validator' // 용도: 증상 입력 검증
+import { extractErrorMessage } from '@/lib/utils/response' // 용도: 에러 메시지 정규화
+import type { TriageResponse } from '@/types/triage' // 용도: triage 응답 타입
+import { toast } from 'sonner' // 용도: 에러 토스트 표시
 
 interface TriageFormProps {
   onResult: (result: TriageResponse) => void
+}
+
+function getTrimmedSymptom(symptom: string) {
+  return symptom.trim()
+}
+
+function canAddSymptom(symptoms: string[], currentSymptom: string) {
+  const trimmedSymptom = getTrimmedSymptom(currentSymptom)
+  if (!trimmedSymptom) {
+    return false
+  }
+
+  return !symptoms.includes(trimmedSymptom)
+}
+
+function buildNextSymptoms(symptoms: string[], currentSymptom: string) {
+  const trimmedSymptom = getTrimmedSymptom(currentSymptom)
+  if (!trimmedSymptom) {
+    return symptoms
+  }
+
+  return [...symptoms, trimmedSymptom]
+}
+
+function buildSubmitDisabled(isLoading: boolean, symptoms: string[]) {
+  return isLoading || symptoms.length === 0
+}
+
+function buildDurationValue(duration: string) {
+  return duration || undefined
+}
+
+function buildAdditionalInfoValue(additionalInfo: string) {
+  return additionalInfo || undefined
+}
+
+function buildSpinnerVisibilityClass(isLoading: boolean) {
+  return isLoading ? 'opacity-100' : 'opacity-0'
+}
+
+function buildIconVisibilityClass(isLoading: boolean) {
+  return isLoading ? 'opacity-0' : 'opacity-100'
+}
+
+function renderSubmitIcon(isLoading: boolean) {
+  return (
+    <span className="mr-2 relative inline-flex h-4 w-4 items-center justify-center">
+      <Spinner
+        className={`absolute h-4 w-4 ${buildSpinnerVisibilityClass(isLoading)}`}
+        aria-hidden={!isLoading}
+      />
+      <Stethoscope
+        className={`absolute h-4 w-4 ${buildIconVisibilityClass(isLoading)}`}
+        aria-hidden={isLoading}
+      />
+    </span>
+  )
 }
 
 export function TriageForm({ onResult }: TriageFormProps) {
@@ -29,21 +86,25 @@ export function TriageForm({ onResult }: TriageFormProps) {
   const [error, setError] = useState<string | null>(null)
 
   const addSymptom = () => {
-    if (currentSymptom.trim() && !symptoms.includes(currentSymptom.trim())) {
-      setSymptoms([...symptoms, currentSymptom.trim()])
-      setCurrentSymptom('')
+    if (!canAddSymptom(symptoms, currentSymptom)) {
+      return
     }
+
+    setSymptoms(buildNextSymptoms(symptoms, currentSymptom))
+    setCurrentSymptom('')
   }
 
   const removeSymptom = (index: number) => {
-    setSymptoms(symptoms.filter((_, i) => i !== index))
+    setSymptoms(symptoms.filter((_, symptomIndex) => symptomIndex !== index))
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      addSymptom()
+    if (e.key !== 'Enter') {
+      return
     }
+
+    e.preventDefault()
+    addSymptom()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,12 +118,13 @@ export function TriageForm({ onResult }: TriageFormProps) {
     }
 
     setIsLoading(true)
+
     try {
       const response = await triageApi.submitTriage({
         symptoms,
-        duration: duration || undefined,
+        duration: buildDurationValue(duration),
         severity: severity[0],
-        additional_info: additionalInfo || undefined,
+        additional_info: buildAdditionalInfoValue(additionalInfo),
       })
       onResult(response)
     } catch (err) {
@@ -74,11 +136,12 @@ export function TriageForm({ onResult }: TriageFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" translate="no">
       <div className="space-y-3">
         <Label className="text-base font-medium">
           What symptoms are you experiencing?
         </Label>
+
         <div className="flex gap-2">
           <Input
             value={currentSymptom}
@@ -87,20 +150,22 @@ export function TriageForm({ onResult }: TriageFormProps) {
             placeholder="Enter a symptom (e.g., headache, fever)"
             disabled={isLoading}
           />
+
           <Button
             type="button"
             variant="outline"
             onClick={addSymptom}
-            disabled={!currentSymptom.trim() || isLoading}
+            disabled={!canAddSymptom(symptoms, currentSymptom) || isLoading}
           >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
+
         {symptoms.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {symptoms.map((symptom, index) => (
               <Badge
-                key={index}
+                key={`${symptom}-${index}`}
                 variant="secondary"
                 className="gap-1 pl-3 pr-1.5 py-1.5"
               >
@@ -108,7 +173,7 @@ export function TriageForm({ onResult }: TriageFormProps) {
                 <button
                   type="button"
                   onClick={() => removeSymptom(index)}
-                  className="ml-1 hover:text-red-600 transition-colors"
+                  className="ml-1 transition-colors hover:text-red-600"
                   disabled={isLoading}
                 >
                   <X className="h-3 w-3" />
@@ -117,6 +182,7 @@ export function TriageForm({ onResult }: TriageFormProps) {
             ))}
           </div>
         )}
+
         {error && <p className="text-sm text-red-600">{error}</p>}
       </div>
 
@@ -124,6 +190,7 @@ export function TriageForm({ onResult }: TriageFormProps) {
         <Label htmlFor="duration" className="text-base font-medium">
           How long have you had these symptoms?
         </Label>
+
         <Input
           id="duration"
           value={duration}
@@ -137,6 +204,7 @@ export function TriageForm({ onResult }: TriageFormProps) {
         <Label className="text-base font-medium">
           How severe are your symptoms? (1-10)
         </Label>
+
         <div className="px-2">
           <Slider
             value={severity}
@@ -146,6 +214,7 @@ export function TriageForm({ onResult }: TriageFormProps) {
             step={1}
             disabled={isLoading}
           />
+
           <div className="mt-2 flex justify-between text-xs text-slate-500">
             <span>Mild</span>
             <span className="font-medium text-slate-700">
@@ -160,6 +229,7 @@ export function TriageForm({ onResult }: TriageFormProps) {
         <Label htmlFor="additionalInfo" className="text-base font-medium">
           Any additional information?
         </Label>
+
         <Textarea
           id="additionalInfo"
           value={additionalInfo}
@@ -173,14 +243,10 @@ export function TriageForm({ onResult }: TriageFormProps) {
       <Button
         type="submit"
         className="w-full"
-        disabled={isLoading || symptoms.length === 0}
+        disabled={buildSubmitDisabled(isLoading, symptoms)}
       >
-        {isLoading ? (
-          <Spinner className="mr-2" />
-        ) : (
-          <Stethoscope className="mr-2 h-4 w-4" />
-        )}
-        Assess Symptoms
+        {renderSubmitIcon(isLoading)}
+        <span>Assess Symptoms</span>
       </Button>
     </form>
   )

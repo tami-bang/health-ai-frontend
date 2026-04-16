@@ -1,11 +1,22 @@
-import { cn } from '@/lib/utils'
-import { TRIAGE_COLORS } from '@/lib/constants/theme'
-import type { TriageLevel } from '@/types/search'
+import { cn } from '@/lib/utils' // 용도: className 병합
+import { getTriageConfig } from '@/lib/utils/triage' // 용도: 백엔드/프론트 triage level 정규화 및 스타일 조회
+import type { TriageLevel } from '@/types/search' // 용도: 기존 프론트 triage level 타입 호환
+import type { ExtendedTriageLevel } from '@/types/triage' // 용도: 백엔드 triage level 타입 호환
 
 interface TriageLevelBadgeProps {
-  level: TriageLevel
+  level: ExtendedTriageLevel | TriageLevel
   size?: 'sm' | 'md' | 'lg'
   className?: string
+}
+
+function getSizeClasses(size: NonNullable<TriageLevelBadgeProps['size']>) {
+  const sizeClasses = {
+    sm: 'px-2 py-0.5 text-xs',
+    md: 'px-2.5 py-1 text-sm',
+    lg: 'px-3 py-1.5 text-base font-semibold',
+  }
+
+  return sizeClasses[size]
 }
 
 export function TriageLevelBadge({
@@ -13,13 +24,7 @@ export function TriageLevelBadge({
   size = 'md',
   className,
 }: TriageLevelBadgeProps) {
-  const config = TRIAGE_COLORS[level]
-
-  const sizeClasses = {
-    sm: 'px-2 py-0.5 text-xs',
-    md: 'px-2.5 py-1 text-sm',
-    lg: 'px-3 py-1.5 text-base font-semibold',
-  }
+  const config = getTriageConfig(level)
 
   return (
     <span
@@ -27,7 +32,7 @@ export function TriageLevelBadge({
         'inline-flex items-center rounded-full font-medium',
         config.bg,
         config.text,
-        sizeClasses[size],
+        getSizeClasses(size),
         className
       )}
     >
