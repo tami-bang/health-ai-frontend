@@ -37,6 +37,10 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --interactive-duration-fast: 120ms;
+  --interactive-duration-normal: 180ms;
+  --interactive-ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
 .dark {
@@ -119,7 +123,77 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  button,
+  [role='button'],
+  a,
+  input,
+  textarea,
+  select,
+  summary {
+    transition:
+      color var(--interactive-duration-normal) var(--interactive-ease),
+      background-color var(--interactive-duration-normal) var(--interactive-ease),
+      border-color var(--interactive-duration-normal) var(--interactive-ease),
+      box-shadow var(--interactive-duration-normal) var(--interactive-ease),
+      transform var(--interactive-duration-fast) var(--interactive-ease),
+      opacity var(--interactive-duration-normal) var(--interactive-ease);
+  }
+
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  a[href],
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  input:disabled,
+  textarea:disabled,
+  select:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
+  button:active:not(:disabled),
+  [role='button']:active:not([aria-disabled='true']),
+  a[href]:active,
+  summary:active {
+    transform: scale(0.985);
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    @apply ring-2 ring-ring/60 ring-offset-2 ring-offset-background outline-none;
+  }
+}
+
+@layer utilities {
+  .interactive-soft {
+    @apply transition-all duration-200 ease-out hover:shadow-sm hover:-translate-y-[1px] active:translate-y-0 active:scale-[0.985];
+  }
+
+  .interactive-highlight {
+    @apply transition-all duration-200 ease-out hover:bg-accent hover:text-accent-foreground active:scale-[0.985];
+  }
+
+  .interactive-disabled {
+    @apply pointer-events-none opacity-60;
+  }
+
+  .surface-elevated {
+    @apply shadow-sm transition-shadow duration-200 ease-out hover:shadow-md;
   }
 }

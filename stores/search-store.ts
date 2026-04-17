@@ -1,5 +1,5 @@
-import { create } from 'zustand'
-import type { SearchResponse, SearchState } from '@/types/search'
+import { create } from 'zustand' // 용도: 전역 검색 상태 저장소 생성
+import type { SearchResponse, SearchState } from '@/types/search' // 용도: 검색 응답 및 상태 타입 사용
 
 interface SearchStore extends SearchState {
   setQuery: (query: string) => void

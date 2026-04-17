@@ -1,24 +1,35 @@
 'use client'
 
-import Link from 'next/link'
-import { ArrowLeft, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PageContainer, PageHeader } from '@/components/layout/page-container'
-import { SymptomSearchForm } from '@/components/search/symptom-search-form'
-import { AISummaryCard } from '@/components/search/ai-summary-card'
-import { TopResultCard } from '@/components/search/top-result-card'
-import { SearchResultCard } from '@/components/search/search-result-card'
-import { GuidanceBanner } from '@/components/search/guidance-banner'
-import { QuestionChipList } from '@/components/search/question-chip-list'
-import { SearchResultSkeleton } from '@/components/common/loading-skeleton'
-import { EmptyState } from '@/components/common/empty-state'
-import { SectionHeader } from '@/components/common/section-header'
-import { useSearch } from '@/hooks/use-search'
-import { ROUTES } from '@/lib/constants/routes'
+import Link from 'next/link' // 용도: 기본 검색 페이지 이동 링크 렌더링
+import { ArrowLeft, AlertCircle } from 'lucide-react' // 용도: 뒤로가기 및 에러 아이콘 표시
+import { Button } from '@/components/ui/button' // 용도: 상단 이동 버튼 렌더링
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card' // 용도: 검색 폼 카드 UI 사용
+import { PageContainer, PageHeader } from '@/components/layout/page-container' // 용도: summary 페이지 공통 레이아웃 사용
+import { SymptomSearchForm } from '@/components/search/symptom-search-form' // 용도: summary 포함 검색 폼 렌더링
+import { AISummaryCard } from '@/components/search/ai-summary-card' // 용도: AI 요약 카드 렌더링
+import { TopResultCard } from '@/components/search/top-result-card' // 용도: 최상위 결과 카드 렌더링
+import { SearchResultCard } from '@/components/search/search-result-card' // 용도: 일반 검색 결과 카드 렌더링
+import { GuidanceBanner } from '@/components/search/guidance-banner' // 용도: triage 안내 배너 표시
+import { QuestionChipList } from '@/components/search/question-chip-list' // 용도: 질문 추천 렌더링
+import { SearchResultSkeleton } from '@/components/common/loading-skeleton' // 용도: summary 검색 로딩 상태 표시
+import { EmptyState } from '@/components/common/empty-state' // 용도: 초기 empty 상태 표시
+import { SectionHeader } from '@/components/common/section-header' // 용도: 각 섹션 제목 렌더링
+import { useSearch } from '@/hooks/use-search' // 용도: 검색 전역 상태 사용
+import { ROUTES } from '@/lib/constants/routes' // 용도: 페이지 이동 경로 상수 사용
+
+function buildSummaryLoadingMessage(query: string): string {
+  const trimmedQuery = query.trim()
+
+  if (!trimmedQuery) {
+    return 'Generating AI summary and preparing results...'
+  }
+
+  return `"${trimmedQuery}" AI 요약과 결과를 생성하는 중입니다...`
+}
 
 export default function SearchSummaryPage() {
-  const { lastResponse, isLoading, error } = useSearch()
+  const { lastResponse, isLoading, error, query } = useSearch()
+  const loadingMessage = buildSummaryLoadingMessage(query)
 
   return (
     <PageContainer>
@@ -34,8 +45,7 @@ export default function SearchSummaryPage() {
         </Button>
       </PageHeader>
 
-      {/* Search Form */}
-      <Card className="border-slate-200 mb-8">
+      <Card className="mb-8 border-slate-200 shadow-sm transition-shadow duration-200 hover:shadow-md">
         <CardHeader>
           <CardTitle>What are you experiencing?</CardTitle>
         </CardHeader>
@@ -44,26 +54,19 @@ export default function SearchSummaryPage() {
         </CardContent>
       </Card>
 
-      {/* Error State */}
       {error && (
-        <div className="mb-6 rounded-lg bg-red-50 border border-red-200 p-4 flex items-center gap-3">
-          <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+        <div className="mb-6 flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
+          <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
           <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
 
-      {/* Loading State */}
-      {isLoading && <SearchResultSkeleton />}
+      {isLoading && <SearchResultSkeleton loadingText={loadingMessage} />}
 
-      {/* Results */}
       {lastResponse && !isLoading && (
         <div className="space-y-6">
-          {/* Guidance Banner */}
-          {lastResponse.guidance && (
-            <GuidanceBanner guidance={lastResponse.guidance} />
-          )}
+          {lastResponse.guidance && <GuidanceBanner guidance={lastResponse.guidance} />}
 
-          {/* AI Summary - Featured */}
           {lastResponse.results_bundle.ai_summary && (
             <section>
               <SectionHeader title="AI Summary" className="mb-4" />
@@ -71,7 +74,6 @@ export default function SearchSummaryPage() {
             </section>
           )}
 
-          {/* Top Result */}
           {lastResponse.results_bundle.top_result && (
             <section>
               <SectionHeader title="Best Match" className="mb-4" />
@@ -79,7 +81,6 @@ export default function SearchSummaryPage() {
             </section>
           )}
 
-          {/* Other Results */}
           {lastResponse.results_bundle.results && lastResponse.results_bundle.results.length > 0 && (
             <section>
               <SectionHeader
@@ -95,22 +96,19 @@ export default function SearchSummaryPage() {
             </section>
           )}
 
-          {/* Question Suggestions */}
           {lastResponse.guidance?.question_suggestions && (
             <section className="border-t border-slate-200 pt-6">
               <QuestionChipList questions={lastResponse.guidance.question_suggestions} />
             </section>
           )}
 
-          {/* Results Meta */}
           <div className="text-center text-xs text-slate-400">
-            Query completed in {lastResponse.meta.query_time_ms}ms |
+            Query completed in {lastResponse.meta.query_time_ms}ms |{' '}
             {lastResponse.meta.total_results} total results
           </div>
         </div>
       )}
 
-      {/* Empty State */}
       {!lastResponse && !isLoading && !error && (
         <EmptyState
           title="Start your AI-powered search"
@@ -118,7 +116,6 @@ export default function SearchSummaryPage() {
         />
       )}
 
-      {/* Disclaimer */}
       <div className="mt-8 rounded-lg bg-slate-50 p-4">
         <p className="text-center text-xs text-slate-500">
           <strong className="text-slate-600">Disclaimer:</strong> AI summaries are generated

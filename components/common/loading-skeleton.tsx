@@ -1,5 +1,6 @@
-import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
+import { Spinner } from '@/components/ui/spinner' // 용도: 로딩 아이콘 표시
+import { Skeleton } from '@/components/ui/skeleton' // 용도: 검색 스켈레톤 UI 표시
+import { cn } from '@/lib/utils' // 용도: className 병합
 
 export function CardSkeleton({ className }: { className?: string }) {
   return (
@@ -54,17 +55,29 @@ export function ListSkeleton({ items = 3 }: { items?: number }) {
   )
 }
 
-export function SearchResultSkeleton() {
+interface SearchResultSkeletonProps {
+  loadingText?: string
+}
+
+export function SearchResultSkeleton({
+  loadingText = 'Searching and preparing results...',
+}: SearchResultSkeletonProps) {
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+        <Spinner className="h-4 w-4 text-blue-600" />
+        <p className="text-sm text-blue-700">{loadingText}</p>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <Skeleton className="h-6 w-3/4" />
         <Skeleton className="mt-3 h-4 w-full" />
         <Skeleton className="mt-2 h-4 w-full" />
         <Skeleton className="mt-2 h-4 w-2/3" />
       </div>
+
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="rounded-lg border border-slate-200 bg-white p-4">
+        <div key={i} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <Skeleton className="h-5 w-1/2" />
           <Skeleton className="mt-2 h-4 w-full" />
           <Skeleton className="mt-1 h-4 w-3/4" />

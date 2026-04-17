@@ -64,8 +64,6 @@ export interface ResultsBundle {
   top_result: TopResult | null
   results: SearchResult[]
   related_topics: RelatedTopic[]
-
-  // optional 처리
   ai_summary?: AISummary | null
 }
 
@@ -76,9 +74,12 @@ export interface SearchResponse {
   results_bundle: ResultsBundle
 }
 
+export type SearchMode = 'search' | 'summary'
+
 export interface SearchState {
   query: string
   lastResponse: SearchResponse | null
   isLoading: boolean
   error: string | null
+  activeMode?: SearchMode | null
 }
